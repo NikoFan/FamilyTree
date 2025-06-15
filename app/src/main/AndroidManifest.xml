@@ -14,10 +14,22 @@
         android:theme="@style/Theme.FamilyTree"
         tools:targetApi="31">
         <activity
+            android:name=".AddTreeActions.AddTreeActivity"
+            android:exported="false"
+            android:label="@string/title_activity_add_tree"
+            android:theme="@style/Theme.FamilyTree" />
+        <activity
+            android:name=".MainPage"
+            android:exported="false"
+            android:label="@string/title_activity_main_page"
+            android:theme="@style/Theme.FamilyTree" />
+        <activity
             android:name=".LogInActivity"
+            android:configChanges="orientation|screenSize"
             android:exported="true"
             android:label="@string/title_activity_log_in"
-            android:theme="@style/Theme.FamilyTree" >
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.FamilyTree">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

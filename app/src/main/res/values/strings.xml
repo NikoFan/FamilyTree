@@ -9,4 +9,6 @@
     <string name="accept_button_padding">20</string>
     <string name="title_activity_registration">RegistrationActivity</string>
     <string name="title_activity_log_in">LogInActivity</string>
+    <string name="title_activity_main_page">MainPage</string>
+    <string name="title_activity_add_tree">AddTreeActivity</string>
 </resources>

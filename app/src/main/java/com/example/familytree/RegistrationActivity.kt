@@ -48,6 +48,7 @@ import com.example.familytree.InputDataSecurity
 import kotlinx.coroutines.launch
 import com.example.familytree.Widgets
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.res.colorResource
 import kotlinx.coroutines.CoroutineScope
 
 
@@ -73,32 +74,16 @@ class RegistrationActivity : ComponentActivity() {
         )
         {
             Widgets.SetImage(R.drawable.small_tree)
-            WindowTitle("Sign Up")
+            Widgets.WindowTitle("Sign Up")
             SignInForm()
-            UnderButton(
+            Widgets.UnderButton(
                 "Account exist? Log in!",
+                LogInActivity::class.java,
                 LocalContext.current
             )
         }
     }
 
-
-    @Composable
-    fun WindowTitle(
-        titleText: String
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = titleText,
-                fontSize = stringResource(R.string.title_text_size).toInt().sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
 
     @Composable
     fun SignInForm() {
@@ -110,62 +95,32 @@ class RegistrationActivity : ComponentActivity() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Input(
+            Widgets.Input(
                 "Create login",
                 userLoginInputValue,
                 OnValueChange = { newText -> userLoginInputValue = newText })
 
-            Input(
+            Widgets.Input(
                 "Create password",
                 userPasswordInputValue,
                 OnValueChange = { newText -> userPasswordInputValue = newText })
             AcceptButton(
                 "Create account",
                 userLoginInputValue.toString(),
-                userPasswordInputValue.toString()
+                userPasswordInputValue.toString(),
+                LocalContext.current
             )
         }
     }
 
-    @Composable
-    fun Input(
-        labelText: String,
-        value: String,
-        OnValueChange: (String) -> Unit
-    ) {
 
-        TextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    top = 30.dp,
-                    start = 20.dp,
-                    end = 20.dp
-                ),
-            value = value,
-            textStyle = TextStyle(
-                fontSize = stringResource(R.string.input_text_size).toInt().sp
-            ),
-            onValueChange = OnValueChange,
-            label = {
-                Text(
-                    text = labelText,
-                    modifier = Modifier
-                        .padding(
-                            start = 20.dp
-                        ),
-                    fontSize = stringResource(R.string.input_text_size).toInt().sp
-                )
-            }
-        )
-    }
 
     @Composable
     fun AcceptButton(
         buttonName: String,
         userLogin: String,
         userPassword: String,
-        // context: Context // Требуется для переходя в другое окно
+        context: Context // Требуется для переходя в другое окно
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()
@@ -174,14 +129,11 @@ class RegistrationActivity : ComponentActivity() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    start = (stringResource(R.string.accept_button_padding).toInt() * 2).dp,
-                    end = (stringResource(R.string.accept_button_padding).toInt() * 2).dp,
-                    top = stringResource(R.string.accept_button_padding).toInt().dp,
-
+                    stringResource(R.string.accept_button_padding).toInt().dp
                     ),
             shape = RectangleShape,
 
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
+            colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.button_color)),
 
 
             onClick = {
@@ -189,16 +141,27 @@ class RegistrationActivity : ComponentActivity() {
                     if (db.getNewAccountExistStatus(userLogin, userPassword)) {
                         // Проверка наличия аккаунта у пользователя
                         println("Account ready to create")
-                    } else {
 
-                        callSnackBar(
+                        // Отправка аккаунта на регистрацию
+                        db.createUserAccount(userLogin, userPassword)
+
+                        // Открытие главного окна
+                        context.startActivity(
+                            Intent(
+                                context,
+                                MainPage::class.java
+                            )
+                        )
+
+                    } else {
+                        Widgets.callSnackBar(
                             "These data already using!",
                             snackbarHostState,
                             scope
                         )
                     }
                 } else {
-                    callSnackBar(
+                    Widgets.callSnackBar(
                         "Please input some data!",
                         snackbarHostState,
                         scope
@@ -219,54 +182,6 @@ class RegistrationActivity : ComponentActivity() {
                 .padding(8.dp)
 
         )
-    }
-
-    fun callSnackBar(
-        messageText: String,
-        snackbarHostState: SnackbarHostState,
-        scope: CoroutineScope
-    ) {
-
-        scope.launch {
-            snackbarHostState.showSnackbar(
-                message = messageText,
-                duration = SnackbarDuration.Short
-            )
-        }
-    }
-
-
-    @Composable
-    fun UnderButton(
-        buttonName: String,
-        context: Context
-    ) {
-
-        Button(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = (stringResource(R.string.accept_button_padding).toInt() * 2).dp,
-                    end = (stringResource(R.string.accept_button_padding).toInt() * 2).dp
-
-                ),
-            shape = RectangleShape,
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-            onClick = {
-                context.startActivity(
-                    Intent(
-                        context,
-                        LogInActivity::class.java
-                    )
-                )
-            }
-        ) {
-            Text(
-                text = buttonName,
-                color = Color.Black,
-                fontSize = stringResource(R.string.under_button_text_size).toInt().sp
-            )
-        }
     }
 
     @Preview(showBackground = true)
