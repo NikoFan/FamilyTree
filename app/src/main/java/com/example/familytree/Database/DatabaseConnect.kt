@@ -1,5 +1,6 @@
 package com.example.familytree.Database
 
+import android.R
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
@@ -10,22 +11,24 @@ class DatabaseConnectClass(context: Context) : SQLiteOpenHelper(
     context, "TreeDatabase.db", null, 1
 ) {
 
+    private val db_reader = readableDatabase
+    private val db_creater = writableDatabase
 
-    public var storage: StaticStorage = StaticStorage()
-    override fun onCreate(db: SQLiteDatabase) {
-        db.execSQL("""
-            Create table Users(
+
+    override fun onCreate(
+        db: SQLiteDatabase
+    ) {
+        db.execSQL(
+            """
+            Create table IF NOT EXISTS Users(
             user_id int primary key not null,
             user_login text not null,
             user_password text not null)
         """.trimIndent()
-
-
         )
-
         db.execSQL(
             """
-            Create table TreeContainer(
+            Create table IF NOT EXISTS TreeContainer(
             tree_id int primary key not null,
             tree_name text not null,
             tree_body text not null,
@@ -36,16 +39,23 @@ class DatabaseConnectClass(context: Context) : SQLiteOpenHelper(
         )
     }
 
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+    override fun onUpgrade(
+        db: SQLiteDatabase,
+        oldVersion: Int,
+        newVersion: Int
+    ) {
         db.execSQL("DROP TABLE IF EXISTS Users")
         onCreate(db)
     }
 
-    fun getUserAccountID(login: String, password: String): Int? {
+    fun getUserAccountID(
+        login: String,
+        password: String
+    ): Int? {
         // ID для авторизации пользователя
         var signInUserCurrentId: Int = -1
-        val db = readableDatabase
-        val cursor: Cursor = db.rawQuery(
+        // val db_reader = readableDatabase
+        val cursor: Cursor = db_reader.rawQuery(
             """
             SELECT user_id
             FROM Users
@@ -63,42 +73,48 @@ class DatabaseConnectClass(context: Context) : SQLiteOpenHelper(
         cursor.close()
         println("User id data: $signInUserCurrentId")
         if (signInUserCurrentId != -1) {
-            storage.setId(signInUserCurrentId)
+            StaticStorage.setId(signInUserCurrentId)
         }
 
         return signInUserCurrentId
     }
 
-    fun getUserBiggestId(): Int {
-        // ID для нового аккаунта
-        var currentUserIdToAddNewAccount: Int = 1
-        val db = readableDatabase
-        val cursor: Cursor = db.rawQuery(
+    fun getBiggestId(
+        tableName: String,
+        columnName: String
+    ): Int {
+        // ID для новой записи
+        var theBiggestTableIdForNewRow: Int = 1
+        // val db_reader = readableDatabase
+        val cursor: Cursor = db_reader.rawQuery(
             """
-            SELECT user_id
-            FROM Users
-            Order by user_id ASC
+            SELECT $columnName
+            FROM $tableName
+            Order by $columnName ASC
         """.trimIndent(), null
         )
 
         if (cursor.moveToFirst()) {
             do {
-                currentUserIdToAddNewAccount = cursor.getInt(0).toInt()
+                theBiggestTableIdForNewRow = cursor.getInt(0).toInt()
             } while (cursor.moveToNext())
         }
         cursor.close()
-        println("last userID = $currentUserIdToAddNewAccount")
+        println("last ID = $theBiggestTableIdForNewRow")
 
-        return currentUserIdToAddNewAccount + 1
+        return theBiggestTableIdForNewRow + 1
     }
 
-    fun createUserAccount(userLogin: String, userPassword: String): Boolean {
+    fun createUserAccount(
+        userLogin: String,
+        userPassword: String
+    ): Boolean {
         try {
             println("create account")
-            var db = writableDatabase
+            // var db_creater = writableDatabase
             // Готовый ID для нового аккаунта
-            var newAccountId: Int = getUserBiggestId()
-            db.execSQL(
+            var newAccountId: Int = getBiggestId("Users", "user_id")
+            db_creater.execSQL(
                 """
             INSERT INTO Users
             VALUES (${newAccountId}, '$userLogin', '$userPassword')
@@ -106,7 +122,7 @@ class DatabaseConnectClass(context: Context) : SQLiteOpenHelper(
             )
 
             // После создания аккаунта - поместить ID в статический класс
-            storage.setId(newAccountId)
+            StaticStorage.setId(newAccountId)
             return true
 
         } catch (e: Exception) {
@@ -118,10 +134,13 @@ class DatabaseConnectClass(context: Context) : SQLiteOpenHelper(
 
     }
 
-    fun getNewAccountExistStatus(newLogin: String, newPassword: String): Boolean {
+    fun getNewAccountExistStatus(
+        newLogin: String,
+        newPassword: String
+    ): Boolean {
         val users = mutableListOf<String>()
-        val db = readableDatabase
-        val cursor: Cursor = db.rawQuery(
+        // val db_reader = readableDatabase
+        val cursor: Cursor = db_reader.rawQuery(
             """
             SELECT user_id
             FROM Users
@@ -141,5 +160,100 @@ class DatabaseConnectClass(context: Context) : SQLiteOpenHelper(
         println("User list data: $users")
 
         return (users.size == 0)
+    }
+
+    // Получение списка имен уже созданнх деревьев
+    fun getUserTreeNames(
+        newNameForTree: String
+    ): Boolean {
+        var treeName: String? = ""
+        var activeUserId: Int? = StaticStorage.getId()
+        var cursor: Cursor = db_reader.rawQuery(
+            """
+            SELECT *
+            FROM TreeContainer
+            WHERE tree_owner = $activeUserId
+                AND tree_name = '$newNameForTree'
+        """.trimIndent(), null
+        )
+        if (cursor.moveToFirst()) {
+            do {
+                treeName = cursor.getString(0)
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        println("name of tree not exist status: ${treeName == ""}")
+
+        return (treeName == "")
+    }
+
+    // функция для создания нового имени для древа
+    fun createNewTree(
+        newTreeName: String
+    ) {
+        println(
+            """
+            INSERT INTO TreeContainer
+            VALUES(${
+                getBiggestId(
+                    "TreeContainer",
+                    "tree_id"
+                )
+            }, '$newTreeName', '{}', ${StaticStorage.getId()})
+        """
+        )
+        db_creater.execSQL(
+            """
+            INSERT INTO TreeContainer
+            VALUES(${
+                getBiggestId(
+                    "TreeContainer",
+                    "tree_id"
+                )
+            }, '$newTreeName', '{}', ${StaticStorage.getId()})
+        """.trimIndent()
+        )
+    }
+
+    // Получение списка деревьев пользователя
+    fun getUserTreesArray(): List<List<Any>> {
+        val treesArray = mutableListOf<List<Any>>()
+
+
+        val cursor: Cursor = db_reader.rawQuery(
+            """
+                select *
+                from TreeContainer
+                where tree_owner = ${StaticStorage.getId()}
+            """.trimIndent(), null
+        )
+        if (cursor.moveToFirst()) {
+            do {
+                var treeId = cursor.getInt(0)
+                var treeName = cursor.getString(1)
+                val treeIconRes = when {
+                    cursor.getInt(0) % 5 == 0 -> com.example.familytree.R.drawable.tree_5
+                    cursor.getInt(0) % 3 == 0 -> com.example.familytree.R.drawable.tree_3
+                    cursor.getInt(0) % 2 == 0 -> com.example.familytree.R.drawable.tree_2
+                    else -> com.example.familytree.R.drawable.tree_absolute
+                }
+
+                treesArray.add(listOf(treeId, treeName, treeIconRes))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+
+        return treesArray
+    }
+
+
+    // Удаление древа из БД
+    fun deleteUserTreeFromTableByIdNumber(
+        idNumber: Int
+    ) {
+        db_creater.execSQL("""
+            DELETE FROM TreeContainer
+            WHERE tree_id = $idNumber
+        """.trimIndent())
     }
 }

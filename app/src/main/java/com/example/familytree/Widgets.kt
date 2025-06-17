@@ -37,6 +37,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -57,16 +58,22 @@ object Widgets {
     fun SetImage(
         imageId: Int
     ) {
-        Image(
-            painter = painterResource(id = imageId),
+        Row (
             modifier = Modifier
-                .size(128.dp)
-                .padding(
-                    bottom = 16.dp
-                )
                 .fillMaxWidth(),
-            contentDescription = "logo"
-        )
+            horizontalArrangement = Arrangement.Center
+        ){
+            Image(
+                painter = painterResource(id = imageId),
+                modifier = Modifier
+                    .size(128.dp)
+                    .padding(
+                        bottom = 16.dp
+                    )
+                    .fillMaxWidth(),
+                contentDescription = "logo"
+            )
+        }
     }
 
     fun callSnackBar(
@@ -207,7 +214,7 @@ object Widgets {
             modifier = modifier
         ) { data ->
             Snackbar(
-                containerColor = Color(0xFFAD0202),
+                containerColor = colorResource(R.color.discard_color),
                 contentColor = Color.White,
                 content = {
                     Row(

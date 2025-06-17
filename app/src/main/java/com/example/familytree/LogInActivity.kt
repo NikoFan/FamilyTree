@@ -1,26 +1,20 @@
 package com.example.familytree
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,27 +23,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import com.example.familytree.Database.DatabaseConnectClass
 import com.example.familytree.ui.theme.FamilyTreeTheme
-import com.example.familytree.InputDataSecurity
-import com.example.familytree.RegistrationActivity
-import com.example.familytree.Widgets
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import kotlin.reflect.KClass
 
 class LogInActivity : ComponentActivity() {
 
@@ -118,7 +101,7 @@ class LogInActivity : ComponentActivity() {
         buttonName: String,
         userLogin: String,
         userPassword: String,
-        context: Context // Требуется для переходя в другое окно
+        nextContext: Context // Требуется для переходя в другое окно
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()
@@ -135,7 +118,9 @@ class LogInActivity : ComponentActivity() {
 
                 if (inputSecurity.ReportSQLI(listOf(userLogin, userPassword))) {
                     println("SQLI")
-                    var db: DatabaseConnectClass = DatabaseConnectClass(this)
+                    var db: DatabaseConnectClass = DatabaseConnectClass(
+                        context = this)
+
                     if (db.getUserAccountID(
                             userLogin,
                             userPassword
@@ -144,9 +129,9 @@ class LogInActivity : ComponentActivity() {
                         println("user exist")
 
                         // Открытие главного окна
-                        context.startActivity(
+                        nextContext.startActivity(
                             Intent(
-                                context,
+                                nextContext,
                                 MainPage::class.java
                             )
                         )

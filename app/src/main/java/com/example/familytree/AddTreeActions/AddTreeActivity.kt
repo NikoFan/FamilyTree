@@ -1,5 +1,7 @@
 package com.example.familytree.AddTreeActions
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,11 +30,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.familytree.AddTreeActions.ui.theme.FamilyTreeTheme
+import com.example.familytree.Database.DatabaseConnectClass
+import com.example.familytree.InputDataSecurity
 import com.example.familytree.MainPage
 import com.example.familytree.R
 import com.example.familytree.Widgets
 
 class AddTreeActivity : ComponentActivity() {
+
+    private var inputSecurity: InputDataSecurity = InputDataSecurity()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -55,18 +61,23 @@ class AddTreeActivity : ComponentActivity() {
             Widgets.SetImage(R.drawable.create_tree)
             Widgets.WindowTitle("Plant a new tree")
             Widgets.InstructionText("Enter tree's name")
-            TreesNameForm()
+            TreesNameForm(
+                LocalContext.current
+            )
             Widgets.UnderButton(
-                "Next time",
+                "Back",
                 MainPage::class.java,
                 LocalContext.current
             )
-
         }
     }
 
     @Composable
-    fun TreesNameForm(){
+    fun TreesNameForm(
+        context: Context
+    ){
+
+
         var treeInputName by remember { mutableStateOf("") }
 
         val snackbarHostState = remember { SnackbarHostState() }
@@ -91,8 +102,29 @@ class AddTreeActivity : ComponentActivity() {
                 colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.button_color)),
                 onClick = {
                     var treeName: String = treeInputName.toString()
-                    if (treeName.length != 0){
-                        println("Имя подходит")
+
+                    if (inputSecurity.ReportSQLI(listOf(treeName))){
+                        var db: DatabaseConnectClass = DatabaseConnectClass(
+                            context = context)
+                        if (db.getUserTreeNames(treeName)){
+                            // Если имя удовлетворяет - Добавление
+                            db.createNewTree(treeName)
+
+                            // Возврат на главное окно
+                            context.startActivity(
+                                Intent(
+                                    context,
+                                    MainPage::class.java
+                                )
+                            )
+
+                        } else {
+                            Widgets.callSnackBar(
+                                "Name is already in use!",
+                                snackbarHostState,
+                                scope
+                            )
+                        }
                     } else{
                         Widgets.callSnackBar(
                             "Enter some text",

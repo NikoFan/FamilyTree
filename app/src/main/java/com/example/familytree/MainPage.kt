@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.familytree.AddTreeActions.AddTreeActivity
+import com.example.familytree.AddTreeActions.TreesViewActivity
 import com.example.familytree.Widgets.acceptValue
 import com.example.familytree.ui.theme.FamilyTreeTheme
 
@@ -74,7 +75,7 @@ class MainPage : ComponentActivity() {
         ) {
             SwitchButton(
                 "Your Trees",
-                RegistrationActivity::class.java,
+                TreesViewActivity::class.java,
                 LocalContext.current
             )
 
