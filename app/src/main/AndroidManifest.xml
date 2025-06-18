@@ -14,6 +14,11 @@
         android:theme="@style/Theme.FamilyTree"
         tools:targetApi="31">
         <activity
+            android:name=".AddTreeActions.EmptyTreeFirstPersonCreate"
+            android:exported="false"
+            android:label="@string/title_activity_empty_tree_first_person_create"
+            android:theme="@style/Theme.FamilyTree" />
+        <activity
             android:name=".AddTreeActions.TreesViewActivity"
             android:exported="false"
             android:label="@string/title_activity_trees_view"

@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">FamilyTree</string>
     <string name="title_text_size">40</string>
+    <string name="padding">10</string>
     <string name="input_text_size">20</string>
     <string name="snackbar_text_size">20</string>
     <string name="button_text_size">30</string>
@@ -12,4 +13,5 @@
     <string name="title_activity_main_page">MainPage</string>
     <string name="title_activity_add_tree">AddTreeActivity</string>
     <string name="title_activity_trees_view">TreesViewActivity</string>
+    <string name="title_activity_empty_tree_first_person_create">EmptyTreeFirstPersonCreate</string>
 </resources>

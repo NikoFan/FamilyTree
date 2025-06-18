@@ -109,8 +109,6 @@ class TreesViewActivity : ComponentActivity() {
                 treeCardsArrayList
             }
 
-
-
             Column(
                 modifier = Modifier
                     .fillMaxHeight(0.7f)
@@ -227,13 +225,23 @@ class TreesViewActivity : ComponentActivity() {
                     Button(
                         onClick = {
                             StaticStorage.setTreeId(currentTreeId)
-
-                            context.startActivity(
-                                Intent(
-                                    context,
-                                    MainPage::class.java
+                            if (db.detectIsTreeEmpty()){
+                                context.startActivity(
+                                    Intent(
+                                        context,
+                                        EmptyTreeFirstPersonCreate()::class.java
+                                    )
                                 )
-                            )
+                            } else {
+                                context.startActivity(
+                                    Intent(
+                                        context,
+                                        MainPage()::class.java
+                                    )
+                                )
+                            }
+
+
                         },
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
@@ -277,7 +285,7 @@ class TreesViewActivity : ComponentActivity() {
 
         if (showDialog) {
             AlertDialog(
-                onDismissRequest = { showDialog = false},
+                onDismissRequest = { showDialog = false },
                 title = { Text("Confirmation") },
                 text = { Text("Are you sure you want to remove the tree?") },
                 confirmButton = {

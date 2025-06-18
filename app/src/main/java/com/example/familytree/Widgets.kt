@@ -10,16 +10,33 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -27,9 +44,10 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +65,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 object Widgets {
 
@@ -58,11 +78,11 @@ object Widgets {
     fun SetImage(
         imageId: Int
     ) {
-        Row (
+        Row(
             modifier = Modifier
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
-        ){
+        ) {
             Image(
                 painter = painterResource(id = imageId),
                 modifier = Modifier
@@ -74,6 +94,145 @@ object Widgets {
                 contentDescription = "logo"
             )
         }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun CreateAccountInputForm(
+        context: Context,
+        nextClassActivity: Class<out Activity>
+    ) {
+        val snackbarHostState = remember { SnackbarHostState() }
+        val scope = rememberCoroutineScope()
+
+        var accountNameInput by remember { mutableStateOf("") }
+        var accountFullNameInput by remember { mutableStateOf("") }
+        var accountBirthdayInput by remember { mutableStateOf("") }
+        val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+        var accountSexInput by remember { mutableStateOf("") }
+        var showDatePicker by remember { mutableStateOf(false) }
+
+        // Опции для выпадающего списка
+        val options = listOf("Male", "Female")
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // NAME INPUT
+            Input(
+                labelText = "Input person's name",
+                value = accountNameInput,
+                OnValueChange = { newText -> accountNameInput = newText }
+            )
+
+            // FIO INPUT
+            Input(
+                labelText = "Input person's full name",
+                value = accountFullNameInput,
+                OnValueChange = { newText -> accountFullNameInput = newText }
+            )
+
+            OutlinedTextField(
+                value = accountBirthdayInput,
+                onValueChange = { newText -> accountBirthdayInput = newText },
+                label = { Text(text = "Date") },
+                modifier = Modifier
+                    .padding(stringResource(R.string.padding).toInt().dp)
+                    .fillMaxWidth(),
+                readOnly = true,
+                trailingIcon = {
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(Icons.Default.DateRange, contentDescription = "Choose date")
+                    }
+                }
+            )
+            options.forEach { option ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable() { accountSexInput = option }
+                ) {
+                    RadioButton(
+                        selected = (option == accountSexInput),
+                        onClick = { accountSexInput = option }
+                    )
+                    Text(
+                        text = option,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+            }
+
+
+            Button(
+                modifier = Modifier
+                    .padding(stringResource(R.string.accept_button_padding).toInt().dp)
+                    .fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colorResource(
+                        R.color.button_color
+                    )
+                ),
+                shape = RectangleShape,
+                onClick = {
+                    // Проверка что поля для ввода не пустые
+                    if (
+                        accountFullNameInput.length != 0 &&
+                        accountNameInput.length != 0 &&
+                        accountSexInput.length != 0 &&
+                        accountBirthdayInput.toString().length != 0
+                    ) {
+                        println("Данные верны")
+                    } else {
+                        callSnackBar(
+                            "Please input some data!",
+                            snackbarHostState,
+                            scope
+                        )
+                    }
+                }
+            ) {
+                Text(
+                    text = "Create person",
+                    color = Color.White,
+                    fontSize = stringResource(R.string.button_text_size).toInt().sp
+                )
+            }
+
+        }
+
+
+        // Диалог выбора даты
+        if (showDatePicker) {
+            val datePickerState = rememberDatePickerState()
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            datePickerState.selectedDateMillis?.let {
+                                val date = LocalDate.ofEpochDay(it / (24 * 60 * 60 * 1000))
+                                accountBirthdayInput = date.format(dateFormatter)
+                            }
+                            showDatePicker = false
+                        }
+                    ) {
+                        Text("OK")
+                    }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
+
+        ErrorSnackbar(
+            snackbarHostState = snackbarHostState,
+            modifier = Modifier
+                .padding(8.dp)
+        )
     }
 
     fun callSnackBar(
@@ -158,9 +317,7 @@ object Widgets {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    top = 30.dp,
-                    start = 20.dp,
-                    end = 20.dp
+                    stringResource(R.string.padding).toInt().dp
                 ),
             value = value,
             textStyle = TextStyle(
@@ -179,10 +336,6 @@ object Widgets {
             }
         )
     }
-
-
-
-
 
 
     // Заголовок окон

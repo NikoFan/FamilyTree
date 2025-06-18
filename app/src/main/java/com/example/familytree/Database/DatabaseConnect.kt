@@ -256,4 +256,28 @@ class DatabaseConnectClass(context: Context) : SQLiteOpenHelper(
             WHERE tree_id = $idNumber
         """.trimIndent())
     }
+
+    // Определение наличия людей в древе
+    fun detectIsTreeEmpty() : Boolean{
+        var treeIdNumber: Int? = StaticStorage.getTreeId()
+        var userIdNumber: Int? = StaticStorage.getId()
+        var treeBodyData: String = "{}"
+        var cursor: Cursor = db_reader.rawQuery(
+            """
+                select tree_body
+                from TreeContainer
+                Where tree_owner = $userIdNumber
+                    and
+                    tree_id = $treeIdNumber
+            """.trimIndent(), null
+        )
+        if (cursor.moveToFirst()) {
+            treeBodyData = cursor.getString(0)
+        }
+        cursor.close()
+
+        println("Тело древа: $treeBodyData")
+
+        return (treeBodyData == "{}")
+    }
 }
