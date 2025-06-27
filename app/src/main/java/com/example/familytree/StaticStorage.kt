@@ -4,6 +4,7 @@ object StaticStorage {
 
     private var activeUserCurrentId: Int? = null
     private var activeTreeIdNumber: Int? = null
+    private var activePersonJsonIdNumber: Int? = 1
 
     fun setId(userId: Int) {
         activeUserCurrentId = userId
@@ -20,4 +21,14 @@ object StaticStorage {
     fun getTreeId(): Int? {
         return activeTreeIdNumber
     }
+
+    fun setPersonId(newPersonIdNumber: Int) {
+        activePersonJsonIdNumber = newPersonIdNumber
+    }
+
+    fun getPersonId(): Int? {
+        return activePersonJsonIdNumber
+    }
+
+
 }

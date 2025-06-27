@@ -14,4 +14,5 @@
     <string name="title_activity_add_tree">AddTreeActivity</string>
     <string name="title_activity_trees_view">TreesViewActivity</string>
     <string name="title_activity_empty_tree_first_person_create">EmptyTreeFirstPersonCreate</string>
+    <string name="title_activity_tree_body_updater">TreeBodyUpdaterActivity</string>
 </resources>

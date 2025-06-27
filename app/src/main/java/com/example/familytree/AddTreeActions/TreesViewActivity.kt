@@ -225,7 +225,7 @@ class TreesViewActivity : ComponentActivity() {
                     Button(
                         onClick = {
                             StaticStorage.setTreeId(currentTreeId)
-                            if (db.detectIsTreeEmpty()){
+                            if (db.detectIsTreeEmpty()) {
                                 context.startActivity(
                                     Intent(
                                         context,
@@ -236,7 +236,7 @@ class TreesViewActivity : ComponentActivity() {
                                 context.startActivity(
                                     Intent(
                                         context,
-                                        MainPage()::class.java
+                                        TreeBodyUpdaterActivity()::class.java
                                     )
                                 )
                             }

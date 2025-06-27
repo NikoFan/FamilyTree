@@ -5,6 +5,8 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import androidx.compose.ui.platform.LocalContext
+import com.example.familytree.MainPage
 import com.example.familytree.StaticStorage
 
 class DatabaseConnectClass(context: Context) : SQLiteOpenHelper(
@@ -218,8 +220,6 @@ class DatabaseConnectClass(context: Context) : SQLiteOpenHelper(
     // Получение списка деревьев пользователя
     fun getUserTreesArray(): List<List<Any>> {
         val treesArray = mutableListOf<List<Any>>()
-
-
         val cursor: Cursor = db_reader.rawQuery(
             """
                 select *
@@ -279,5 +279,39 @@ class DatabaseConnectClass(context: Context) : SQLiteOpenHelper(
         println("Тело древа: $treeBodyData")
 
         return (treeBodyData == "{}")
+    }
+
+    // Получения древа
+    fun getTreeBody() : String{
+        var treeIdNumber: Int? = StaticStorage.getTreeId()
+        var userIdNumber: Int? = StaticStorage.getId()
+        var treeBodyData: String = "{}"
+        var cursor: Cursor = db_reader.rawQuery(
+            """
+                select tree_body
+                from TreeContainer
+                Where tree_owner = $userIdNumber
+                    and
+                    tree_id = $treeIdNumber
+            """.trimIndent(), null
+        )
+        if (cursor.moveToFirst()) {
+            treeBodyData = cursor.getString(0)
+        }
+        cursor.close()
+
+        println("Тело древа: $treeBodyData")
+
+        return treeBodyData
+    }
+
+    // Обновление tree_body
+    fun UpdateTreeBody(newTreeBodyValue: String) {
+        var treeIdNumber: Int? = StaticStorage.getTreeId()
+        db_creater.execSQL("""
+            UPDATE  TreeContainer
+            SET tree_body = '$newTreeBodyValue'
+            WHERE tree_id = $treeIdNumber
+        """.trimIndent())
     }
 }

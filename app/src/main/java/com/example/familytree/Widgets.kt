@@ -63,10 +63,12 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.familytree.Database.DatabaseConnectClass
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import com.example.familytree.WorkWithJSON.JsonWriter
 
 object Widgets {
 
@@ -96,144 +98,7 @@ object Widgets {
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun CreateAccountInputForm(
-        context: Context,
-        nextClassActivity: Class<out Activity>
-    ) {
-        val snackbarHostState = remember { SnackbarHostState() }
-        val scope = rememberCoroutineScope()
 
-        var accountNameInput by remember { mutableStateOf("") }
-        var accountFullNameInput by remember { mutableStateOf("") }
-        var accountBirthdayInput by remember { mutableStateOf("") }
-        val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
-        var accountSexInput by remember { mutableStateOf("") }
-        var showDatePicker by remember { mutableStateOf(false) }
-
-        // Опции для выпадающего списка
-        val options = listOf("Male", "Female")
-        Column(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            // NAME INPUT
-            Input(
-                labelText = "Input person's name",
-                value = accountNameInput,
-                OnValueChange = { newText -> accountNameInput = newText }
-            )
-
-            // FIO INPUT
-            Input(
-                labelText = "Input person's full name",
-                value = accountFullNameInput,
-                OnValueChange = { newText -> accountFullNameInput = newText }
-            )
-
-            OutlinedTextField(
-                value = accountBirthdayInput,
-                onValueChange = { newText -> accountBirthdayInput = newText },
-                label = { Text(text = "Date") },
-                modifier = Modifier
-                    .padding(stringResource(R.string.padding).toInt().dp)
-                    .fillMaxWidth(),
-                readOnly = true,
-                trailingIcon = {
-                    IconButton(onClick = { showDatePicker = true }) {
-                        Icon(Icons.Default.DateRange, contentDescription = "Choose date")
-                    }
-                }
-            )
-            options.forEach { option ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable() { accountSexInput = option }
-                ) {
-                    RadioButton(
-                        selected = (option == accountSexInput),
-                        onClick = { accountSexInput = option }
-                    )
-                    Text(
-                        text = option,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
-            }
-
-
-            Button(
-                modifier = Modifier
-                    .padding(stringResource(R.string.accept_button_padding).toInt().dp)
-                    .fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorResource(
-                        R.color.button_color
-                    )
-                ),
-                shape = RectangleShape,
-                onClick = {
-                    // Проверка что поля для ввода не пустые
-                    if (
-                        accountFullNameInput.length != 0 &&
-                        accountNameInput.length != 0 &&
-                        accountSexInput.length != 0 &&
-                        accountBirthdayInput.toString().length != 0
-                    ) {
-                        println("Данные верны")
-                    } else {
-                        callSnackBar(
-                            "Please input some data!",
-                            snackbarHostState,
-                            scope
-                        )
-                    }
-                }
-            ) {
-                Text(
-                    text = "Create person",
-                    color = Color.White,
-                    fontSize = stringResource(R.string.button_text_size).toInt().sp
-                )
-            }
-
-        }
-
-
-        // Диалог выбора даты
-        if (showDatePicker) {
-            val datePickerState = rememberDatePickerState()
-            DatePickerDialog(
-                onDismissRequest = { showDatePicker = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            datePickerState.selectedDateMillis?.let {
-                                val date = LocalDate.ofEpochDay(it / (24 * 60 * 60 * 1000))
-                                accountBirthdayInput = date.format(dateFormatter)
-                            }
-                            showDatePicker = false
-                        }
-                    ) {
-                        Text("OK")
-                    }
-                }
-            ) {
-                DatePicker(state = datePickerState)
-            }
-        }
-
-        ErrorSnackbar(
-            snackbarHostState = snackbarHostState,
-            modifier = Modifier
-                .padding(8.dp)
-        )
-    }
 
     fun callSnackBar(
         messageText: String,
